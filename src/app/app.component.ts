@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
 import { invoke } from '@tauri-apps/api/tauri';
 
+const ffmpeg = new FFmpeg();
+const createFFmpeg = FFmpeg;
 interface SubtitleLine {
   start: number;
   end: number;
@@ -24,27 +27,28 @@ export class AppComponent {
   currentSubtitleWords: string[] = [];
   savedTranslations: TranslationItem[] = [];
 
-  async onVideoSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
+async onVideoSelected(event: Event) {
+  const input = event.target as HTMLInputElement;
 
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      this.message = 'Loading FFmpeg...';
-      const ffmpeg = createFFmpeg({ log: true });
-      await ffmpeg.load();
+  if (input.files && input.files.length > 0) {
+    const file = input.files[0];
 
-      this.message = 'Processing video...';
-      ffmpeg.FS('writeFile', file.name, await fetchFile(file));
+    this.message = 'Loading FFmpeg...';
+    const ffmpeg = new FFmpeg();
+    await ffmpeg.load();
 
-      await ffmpeg.run('-i', file.name, 'output.mp4');
+    this.message = 'Processing video...';
+    await ffmpeg.writeFile(file.name, await fetchFile(file));
 
-      const data = ffmpeg.FS('readFile', 'output.mp4');
-      const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-      this.videoSrc = URL.createObjectURL(videoBlob);
+    await ffmpeg.exec(['-i', file.name, 'output.mp4']);
 
-      this.message = 'Video ready!';
-    }
+    const data = await ffmpeg.readFile('output.mp4');
+    const videoBlob = new Blob([data], { type: 'video/mp4' });
+    this.videoSrc = URL.createObjectURL(videoBlob);
+
+    this.message = 'Video ready!';
   }
+}
 
   onSubtitleFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
