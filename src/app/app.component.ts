@@ -7,6 +7,11 @@ interface SubtitleLine {
   text: string;
 }
 
+interface TranslationItem {
+  word: string;
+  translation: string;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -15,6 +20,7 @@ export class AppComponent {
   videoSrc: string | undefined;
   subtitles: SubtitleLine[] = [];
   currentSubtitleWords: string[] = [];
+  savedTranslations: TranslationItem[] = [];
 
   onVideoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -73,8 +79,8 @@ export class AppComponent {
 
   async onWordClick(word: string) {
     try {
-      const result = await invoke<string>('translate', { word });
-      alert(`Translation: ${result}`);
+      const translation = await invoke<string>('translate', { word });
+      this.savedTranslations.push({ word, translation });
     } catch (error) {
       console.error('Translation failed:', error);
     }

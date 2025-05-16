@@ -11,3 +11,12 @@
     {{ word }}
   </span>
 </div>
+
+<div class="translation-list">
+  <h3>Saved Translations:</h3>
+  <ul>
+    <li *ngFor="let item of savedTranslations">
+      {{ item.word }} => {{ item.translation }}
+    </li>
+  </ul>
+</div>
