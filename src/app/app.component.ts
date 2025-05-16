@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { invoke } from '@tauri-apps/api/tauri';
 
 interface SubtitleLine {
@@ -15,19 +16,33 @@ interface TranslationItem {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-    standalone: true
 })
 export class AppComponent {
+  message = '';
   videoSrc: string | undefined;
   subtitles: SubtitleLine[] = [];
   currentSubtitleWords: string[] = [];
   savedTranslations: TranslationItem[] = [];
 
-  onVideoSelected(event: Event) {
+  async onVideoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
+
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      this.videoSrc = URL.createObjectURL(file);
+      this.message = 'Loading FFmpeg...';
+      const ffmpeg = createFFmpeg({ log: true });
+      await ffmpeg.load();
+
+      this.message = 'Processing video...';
+      ffmpeg.FS('writeFile', file.name, await fetchFile(file));
+
+      await ffmpeg.run('-i', file.name, 'output.mp4');
+
+      const data = ffmpeg.FS('readFile', 'output.mp4');
+      const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+      this.videoSrc = URL.createObjectURL(videoBlob);
+
+      this.message = 'Video ready!';
     }
   }
 
@@ -79,13 +94,12 @@ export class AppComponent {
   }
 
   async onWordClick(word: string) {
-   try {
-    const translation = await invoke<string>('translate', { word });
-    this.savedTranslations.push({ word, translation });
-
-    await invoke('save_translation', { word, translation });
-  } catch (error) {
-    console.error('Translation failed:', error);
-  }
+    try {
+      const translation = await invoke<string>('translate', { word });
+      this.savedTranslations.push({ word, translation });
+      await invoke('save_translation', { word, translation });
+    } catch (error) {
+      console.error('Translation failed:', error);
+    }
   }
 }

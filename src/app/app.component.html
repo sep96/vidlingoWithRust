@@ -1,22 +1,21 @@
+
 <input type="file" (change)="onVideoSelected($event)" accept="video/*" />
 
 <input type="file" (change)="onSubtitleFileSelected($event)" accept=".vtt,.srt" />
 
-<video #videoPlayer width="640" height="360" controls (timeupdate)="onTimeUpdate(videoPlayer)">
-  <source [src]="videoSrc">
-</video>
+<p>{{ message }}</p>
 
-<div class="subtitle-display">
+<video #videoPlayer *ngIf="videoSrc" [src]="videoSrc" controls width="640" (timeupdate)="onTimeUpdate(videoPlayer)"></video>
+
+<div *ngIf="currentSubtitleWords.length > 0" class="subtitle-display">
   <span *ngFor="let word of currentSubtitleWords" (click)="onWordClick(word)">
     {{ word }}
   </span>
 </div>
 
-<div class="translation-list">
+<div *ngIf="savedTranslations.length > 0" class="translation-list">
   <h3>Saved Translations:</h3>
   <ul>
-    <li *ngFor="let item of savedTranslations">
-      {{ item.word }} => {{ item.translation }}
-    </li>
+    <li *ngFor="let item of savedTranslations">{{ item.word }} => {{ item.translation }}</li>
   </ul>
 </div>
