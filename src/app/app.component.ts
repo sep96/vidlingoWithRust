@@ -1,18 +1,20 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-import { invoke } from "@tauri-apps/api/core";
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
 })
 export class AppComponent {
- async translate(word: string) {
-    const result = await invoke('translate', { word });
-    alert(result);
+  // آدرس محلی ویدیو که قرار است نمایش داده شود
+  videoSrc: string | undefined;
+
+  // متد انتخاب فایل
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      // تبدیل فایل به آدرس قابل نمایش در مرورگر
+      this.videoSrc = URL.createObjectURL(file);
+    }
   }
 }

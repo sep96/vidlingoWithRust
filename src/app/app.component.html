@@ -1,9 +1,11 @@
-<video #videoPlayer width="640" controls>
-  <source src="assets/sample.mp4" type="video/mp4">
-  <track src="assets/sample.vtt" kind="subtitles" srclang="en" label="English">
-</video>
+<!-- دکمه انتخاب فایل ویدیویی -->
+<input type="file" (change)="onFileSelected($event)" accept="video/*" />
 
-<div>
-  <button (click)="translate('hello')">hello</button>
-  <button (click)="translate('world')">world</button>
-</div>
+<!-- پخش‌کننده ویدیو -->
+<video
+  #videoPlayer
+  width="640"
+  height="360"
+  controls
+  [src]="videoSrc">
+</video>
