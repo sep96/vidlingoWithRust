@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { invoke } from '@tauri-apps/api/tauri';
 
 interface SubtitleLine {
   start: number;
@@ -70,7 +71,12 @@ export class AppComponent {
     this.currentSubtitleWords = currentLine ? currentLine.text.split(' ') : [];
   }
 
-  onWordClick(word: string) {
-    alert(`Clicked on word: ${word}`);
+  async onWordClick(word: string) {
+    try {
+      const result = await invoke<string>('translate', { word });
+      alert(`Translation: ${result}`);
+    } catch (error) {
+      console.error('Translation failed:', error);
+    }
   }
 }
