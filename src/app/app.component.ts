@@ -15,6 +15,7 @@ interface TranslationItem {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
+    standalone: true
 })
 export class AppComponent {
   videoSrc: string | undefined;
