@@ -1,14 +1,13 @@
 <input type="file" (change)="onVideoSelected($event)" accept="video/*" />
 
-<input type="file" multiple (change)="onSubtitlesSelected($event)" accept=".vtt,.srt" />
+<input type="file" (change)="onSubtitleFileSelected($event)" accept=".vtt,.srt" />
 
-<select (change)="onSubtitleChange($event)">
-  <option *ngFor="let sub of subtitles; let i = index" [value]="i">
-    {{ sub.name }}
-  </option>
-</select>
-
-<video #videoPlayer width="640" height="360" controls [src]="videoSrc">
-  <track *ngFor="let sub of subtitles" [src]="sub.url" kind="subtitles" [label]="sub.name" [srclang]="sub.lang" [default]="sub.default">
-  </track>
+<video #videoPlayer width="640" height="360" controls (timeupdate)="onTimeUpdate(videoPlayer)">
+  <source [src]="videoSrc">
 </video>
+
+<div class="subtitle-display">
+  <span *ngFor="let word of currentSubtitleWords" (click)="onWordClick(word)">
+    {{ word }}
+  </span>
+</div>

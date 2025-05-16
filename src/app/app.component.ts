@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
 
-interface Subtitle {
-  name: string;
-  lang: string;
-  url: string;
-  default: boolean;
+interface SubtitleLine {
+  start: number;
+  end: number;
+  text: string;
 }
 
 @Component({
@@ -13,8 +12,8 @@ interface Subtitle {
 })
 export class AppComponent {
   videoSrc: string | undefined;
-  subtitles: Subtitle[] = [];
-  videoElement: HTMLVideoElement | null = null;
+  subtitles: SubtitleLine[] = [];
+  currentSubtitleWords: string[] = [];
 
   onVideoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -24,25 +23,54 @@ export class AppComponent {
     }
   }
 
-  onSubtitlesSelected(event: Event) {
+  onSubtitleFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    this.subtitles = [];
     if (input.files && input.files.length > 0) {
-      for (let i = 0; i < input.files.length; i++) {
-        const file = input.files[i];
-        this.subtitles.push({
-          name: file.name,
-          lang: 'en',
-          url: URL.createObjectURL(file),
-          default: i === 0
-        });
-      }
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        const content = reader.result as string;
+        this.subtitles = this.parseVTT(content);
+      };
+      reader.readAsText(file);
     }
   }
 
-  onSubtitleChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const index = parseInt(select.value, 10);
-    this.subtitles.forEach((sub, i) => sub.default = i === index);
+  parseVTT(content: string): SubtitleLine[] {
+    const lines = content.split('\n\n');
+    const result: SubtitleLine[] = [];
+
+    for (const line of lines) {
+      const parts = line.split('\n');
+      if (parts.length >= 2) {
+        const [startStr, endStr] = parts[0].split(' --> ');
+        const start = this.timeStringToSeconds(startStr.trim());
+        const end = this.timeStringToSeconds(endStr.trim());
+        const text = parts.slice(1).join(' ');
+        result.push({ start, end, text });
+      }
+    }
+
+    return result;
+  }
+
+  timeStringToSeconds(time: string): number {
+    const parts = time.split(':');
+    const secondsParts = parts[2].split('.');
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    const seconds = parseInt(secondsParts[0], 10);
+    const milliseconds = parseInt(secondsParts[1] || '0', 10);
+    return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+  }
+
+  onTimeUpdate(video: HTMLVideoElement) {
+    const currentTime = video.currentTime;
+    const currentLine = this.subtitles.find(sub => currentTime >= sub.start && currentTime <= sub.end);
+    this.currentSubtitleWords = currentLine ? currentLine.text.split(' ') : [];
+  }
+
+  onWordClick(word: string) {
+    alert(`Clicked on word: ${word}`);
   }
 }
