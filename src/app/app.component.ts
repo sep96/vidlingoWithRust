@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import { invoke } from '@tauri-apps/api/tauri';
-
+import { CommonModule } from '@angular/common';
 const ffmpeg = new FFmpeg();
 const createFFmpeg = FFmpeg;
 interface SubtitleLine {
@@ -19,6 +19,9 @@ interface TranslationItem {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
+  standalone: true,
+  imports: [CommonModule],
+
 })
 export class AppComponent {
   message = '';
