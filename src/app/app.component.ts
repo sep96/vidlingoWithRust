@@ -78,11 +78,13 @@ export class AppComponent {
   }
 
   async onWordClick(word: string) {
-    try {
-      const translation = await invoke<string>('translate', { word });
-      this.savedTranslations.push({ word, translation });
-    } catch (error) {
-      console.error('Translation failed:', error);
-    }
+   try {
+    const translation = await invoke<string>('translate', { word });
+    this.savedTranslations.push({ word, translation });
+
+    await invoke('save_translation', { word, translation });
+  } catch (error) {
+    console.error('Translation failed:', error);
+  }
   }
 }
